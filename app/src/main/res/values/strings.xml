@@ -1,0 +1,13 @@
+<resources>
+    <string name="signal_strength">Sig: %d</string>
+    <string name="console">Console</string>
+    <string name="finish">Finish</string>
+    <string name="reset">Reset</string>
+    <string name="connect">Connected</string>
+    <string name="connecting">Connecting</string>
+    <string name="scanning">Scanning...</string>
+    <string name="mode3">Wheel  %1$d  Time %2$f  ; Crank %3$d Time %4$f </string>
+    <string name="mode1">Wheel  %1$d  Time %2$f </string>
+    <string name="mode2">Crank  %1$d  Time %2$f </string>
+    <string name="app_name">CSC Test</string>
+</resources>
