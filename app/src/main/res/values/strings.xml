@@ -10,4 +10,6 @@
     <string name="mode1">Wheel  %1$d  Time %2$f </string>
     <string name="mode2">Crank  %1$d  Time %2$f </string>
     <string name="app_name">CSC Test</string>
+    <string name="connected">connected, fetching characteristic...</string>
+    <string name="disconnected">Connection lost</string>
 </resources>

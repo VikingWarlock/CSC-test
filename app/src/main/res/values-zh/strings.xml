@@ -8,4 +8,6 @@
     <string name="mode1">轮圈  %1$d  时间 %2$f </string>
     <string name="mode2">曲柄  %1$d  时间 %2$f </string>
     <string name="app_name">CSC测试</string>
+    <string name="connected">连接建立,获取特征中...</string>
+    <string name="disconnected">连接断开</string>
 </resources>

@@ -161,7 +161,7 @@ public class CadencePeripheral {
                     //connection has been established
                     CadencePeripheral.this.state=2;
                     Log.d("Bluetooth", "Connection has been established");
-                    MSGEvent mevent = new MSGEvent("连接建立,获取特征中...");
+                    MSGEvent mevent = new MSGEvent(App.sharedApp().getString(R.string.connected));
                     EventBus.getDefault().post(mevent);
 
                     CadencePeripheral.this.gatt = gatt;
@@ -186,7 +186,7 @@ public class CadencePeripheral {
                 event.MacAddress = event.device.getAddress();
                 EventBus.getDefault().post(event);
                 Log.d("Bluetooth", "Connection has been lost");
-                MSGEvent mevent = new MSGEvent("连接断开");
+                MSGEvent mevent = new MSGEvent(App.sharedApp().getString(R.string.disconnected));
                 EventBus.getDefault().post(mevent);
             }
 
