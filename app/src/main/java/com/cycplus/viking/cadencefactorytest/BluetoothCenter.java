@@ -121,9 +121,14 @@ public class BluetoothCenter {
     }
 
 
-    public void cancenConnection(CadencePeripheral peripheral){
+    public void cancenConnection(final CadencePeripheral peripheral){
         if (peripheral!=null)
-            peripheral.disconnect();
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    peripheral.disconnect();
+                }
+            });
     }
 
     /**
@@ -131,7 +136,7 @@ public class BluetoothCenter {
      *
      * @param tail 尾灯蓝牙实例
      */
-    public void connectXuanTail(BluetoothDevice tail) {
+    public void connectXuanTail(final BluetoothDevice tail) {
         if (isConnecting!=null&&isConnecting.get()!=null){
             return;
         }
@@ -149,18 +154,26 @@ public class BluetoothCenter {
 
     private final BluetoothAdapter.LeScanCallback scanCallback = new BluetoothAdapter.LeScanCallback() {
         @Override
-        public void onLeScan(BluetoothDevice bluetoothDevice, int rssi, byte[] bytes) {
-            Log.d("Bluetooth scanned",bluetoothDevice.getAddress()+" rssi "+rssi);
-            if (!peripheralMap.containsKey(bluetoothDevice.getAddress())){
-                CadencePeripheral peripheral=new CadencePeripheral(bluetoothDevice);
-                peripheral.setRssi(rssi);
-                peripheralMap.put(bluetoothDevice.getAddress(),peripheral);
-                EventBus.getDefault().post(CenterEvent.newEvent());
-            }else{
-                CadencePeripheral peripheral=peripheralMap.get(bluetoothDevice.getAddress());
-                peripheral.setRssi(rssi);
-                EventBus.getDefault().post(CenterEvent.rssiEvent(peripheral));
-            }
+        public void onLeScan(final BluetoothDevice bluetoothDevice,final int rssi, byte[] bytes) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+//                    Log.d("Bluetooth scanned",bluetoothDevice.getAddress()+" rssi "+rssi);
+                    if (rssi<-65){
+                        return;
+                    }
+                    if (!peripheralMap.containsKey(bluetoothDevice.getAddress())){
+                        CadencePeripheral peripheral=new CadencePeripheral(bluetoothDevice);
+                        peripheral.setRssi(rssi);
+                        peripheralMap.put(bluetoothDevice.getAddress(),peripheral);
+                        EventBus.getDefault().post(CenterEvent.newEvent());
+                    }else{
+                        CadencePeripheral peripheral=peripheralMap.get(bluetoothDevice.getAddress());
+                        peripheral.setRssi(rssi);
+                        EventBus.getDefault().post(CenterEvent.rssiEvent(peripheral));
+                    }
+                }
+            });
         }
     };
 

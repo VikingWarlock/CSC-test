@@ -73,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
             }else {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 34);
             }
+        }else {
+            BluetoothCenter.getInstance().scanDevices();
         }
 
 

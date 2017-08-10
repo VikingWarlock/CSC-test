@@ -49,12 +49,13 @@ public class CadencePeripheral {
             gatt.disconnect();
             gatt = null;
             notifyCharacteristic = null;
+            state=-1;
         }
     }
 
 
     public boolean isAvailable() {
-        return state == 2 || state == 3 || (System.currentTimeMillis() - timestamp < 5000);
+        return state==1||state == 2 || state == 3 || (System.currentTimeMillis() - timestamp < 5000);
     }
 
 
@@ -135,7 +136,7 @@ public class CadencePeripheral {
                 break;
             }
             case 0x02: {
-                res=String.format(App.sharedApp().getResources().getString(R.string.mode1),cadence_round,cadence_time/1024.f)+"\n";
+                res=String.format(App.sharedApp().getResources().getString(R.string.mode2),cadence_round,cadence_time/1024.f)+"\n";
 //                res = "曲柄" + cadence_round + " 时间 " + cadence_time/1024.f + "\n";
                 break;
             }
