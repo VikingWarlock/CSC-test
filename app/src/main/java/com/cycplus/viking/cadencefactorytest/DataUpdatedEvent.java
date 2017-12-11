@@ -10,7 +10,7 @@ public class DataUpdatedEvent {
         if (type==0){
             msg=cadence.getLatestedData();
         }else {
-            msg=App.sharedApp().getString(R.string.NO_DATA);
+            msg=App.sharedApp().getString(R.string.NO_DATA)+"\n";
         }
     }
 

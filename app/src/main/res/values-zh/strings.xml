@@ -4,7 +4,7 @@
     <string name="console">控制台</string>
     <string name="connect">已连接</string>
     <string name="connecting">连接中</string>
-    <string name="mode3">轮圈  %1$d  时间 %2$f  ; 曲柄 %3$d 时间 %4$f </string>
+    <string name="mode3">轮圈  %1$d  时间 %2$f  ; 曲柄 %3$d 时间 %4$f</string>
     <string name="mode1">轮圈  %1$d  时间 %2$f </string>
     <string name="mode2">曲柄  %1$d  时间 %2$f </string>
     <string name="app_name">CSC测试</string>
