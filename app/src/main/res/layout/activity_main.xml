@@ -14,14 +14,15 @@
         android:id="@+id/scan_list_view"/>
 
     <TextView
-        android:text="@string/console"
+        android:id="@+id/console"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginBottom="80dp"
         android:background="#000"
+        android:text="@string/console"
+        android:textColor="@android:color/holo_green_dark"
         android:textSize="18sp"
-        android:id="@+id/console"
-        android:textColor="@android:color/holo_green_dark" />
+        android:textStyle="bold" />
 
     <LinearLayout
         android:layout_marginTop="-80dp"

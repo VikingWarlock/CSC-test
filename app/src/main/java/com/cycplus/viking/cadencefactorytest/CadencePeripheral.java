@@ -10,6 +10,7 @@ import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -41,7 +42,7 @@ public class CadencePeripheral {
 
     private float delta_cadence;
     private float delta_speed;
-    private int sameCount=0;
+    private int sameCount = 0;
 
     public CadencePeripheral(BluetoothDevice device) {
         bleDevice = device;
@@ -116,22 +117,22 @@ public class CadencePeripheral {
             delta_cadence = 0;
             delta_speed = 0;
             sameCount++;
-            if (sameCount==3){
-                sameCount=0;
-                DataUpdatedEvent event = new DataUpdatedEvent(this,1);
+            if (sameCount == 3) {
+                sameCount = 0;
+                DataUpdatedEvent event = new DataUpdatedEvent(this, 1);
                 EventBus.getDefault().post(event);
             }
         } else {
             dataChanged = true;
-            if (cadence_round!=0)
-                delta_cadence = ((new_cadence_round - cadence_round) / 1.f / ((new_cadence_time - cadence_time)/1024.f))*60.f;
-            if (speed_round!=0)
-                delta_speed = ((new_speed_round - speed_round) / 1.f / ((new_speed_time - speed_time)/1024.f))*2.077f*3.6f;
+            if (cadence_round != 0)
+                delta_cadence = ((new_cadence_round - cadence_round) / 1.f / ((new_cadence_time - cadence_time) / 1024.f)) * 60.f;
+            if (speed_round != 0)
+                delta_speed = ((new_speed_round - speed_round) / 1.f / ((new_speed_time - speed_time) / 1024.f)) * 2.077f * 3.6f;
             cadence_time = new_cadence_time;
             cadence_round = new_cadence_round;
             speed_time = new_speed_time;
             speed_round = new_speed_round;
-            DataUpdatedEvent event = new DataUpdatedEvent(this,0);
+            DataUpdatedEvent event = new DataUpdatedEvent(this, 0);
             EventBus.getDefault().post(event);
 
         }
@@ -140,23 +141,24 @@ public class CadencePeripheral {
 
     public String getLatestedData() {
         String res;
+        DecimalFormat a = new DecimalFormat("###.##");
         switch (mode) {
             case 0x03: {
                 res = String.format(App.sharedApp().getResources().getString(R.string.mode3), speed_round, speed_time / 1024.f, cadence_round, cadence_time / 1024.f);
 //                res =  "轮圈 " + speed_round + " 时间 " + speed_time/1024.f + " ; 曲柄" + cadence_round + " 时间 " + cadence_time/1024.f + "\n";
-                res=res+"   --->  ("+delta_speed+","+delta_cadence+")\n";
+                res = res + "   --->  (" + a.format(delta_speed) + "," + a.format(delta_cadence) + ")\n";
                 break;
             }
             case 0x01: {
                 res = String.format(App.sharedApp().getResources().getString(R.string.mode1), speed_round, speed_time / 1024.f);
 //                res = "轮圈 " + speed_round + " 时间 " + speed_time/1024.f + "\n";
-                res=res+"   --->  ("+delta_speed+")\n";
+                res = res + "   --->  (" + a.format(delta_speed) + ")\n";
                 break;
             }
             case 0x02: {
                 res = String.format(App.sharedApp().getResources().getString(R.string.mode2), cadence_round, cadence_time / 1024.f);
 //                res = "曲柄" + cadence_round + " 时间 " + cadence_time/1024.f + "\n";
-                res=res+"   --->  ("+delta_cadence+")\n";
+                res = res + "   --->  (" + a.format(delta_cadence) + ")\n";
                 break;
             }
             default: {
