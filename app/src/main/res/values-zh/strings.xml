@@ -10,4 +10,9 @@
     <string name="app_name">CSC测试</string>
     <string name="connected">连接建立,获取特征中...</string>
     <string name="disconnected">连接断开</string>
+    <string name="finish">完成</string>
+    <string name="reset">重置</string>
+    <string name="scanning">扫描中...</string>
+    <string name="NO_DATA">无数据!!</string>
+
 </resources>

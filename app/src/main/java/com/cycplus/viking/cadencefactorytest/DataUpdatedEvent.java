@@ -6,8 +6,12 @@ package com.cycplus.viking.cadencefactorytest;
 
 public class DataUpdatedEvent {
     String msg;
-    public DataUpdatedEvent(CadencePeripheral cadence){
-        msg=cadence.getLatestedData();
+    public DataUpdatedEvent(CadencePeripheral cadence,int type){
+        if (type==0){
+            msg=cadence.getLatestedData();
+        }else {
+            msg=App.sharedApp().getString(R.string.NO_DATA);
+        }
     }
 
 }

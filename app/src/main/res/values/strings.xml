@@ -12,4 +12,5 @@
     <string name="app_name">CSC Test</string>
     <string name="connected">connected, fetching characteristic...</string>
     <string name="disconnected">Connection lost</string>
+    <string name="NO_DATA">No Data</string>
 </resources>
