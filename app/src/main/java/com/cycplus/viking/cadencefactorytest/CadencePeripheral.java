@@ -39,6 +39,9 @@ public class CadencePeripheral {
     private long cadence_time = 0;
     private boolean dataChanged = false;
 
+    private int delta_cadence;
+    private int delta_speed;
+
     public CadencePeripheral(BluetoothDevice device) {
         bleDevice = device;
         timestamp = System.currentTimeMillis();
@@ -81,24 +84,24 @@ public class CadencePeripheral {
         switch (flag) {
             case 0x03: {
                 if (data.length >= 11) {
-                    new_speed_round = ((data[4]&0xff) << 24) + ((data[3]&0xff) << 16) + ((data[2]&0xff) << 8) + (data[1]&0xff);
-                    new_speed_time = ((data[6]&0xff) << 8) + (data[5]&0xff);
-                    new_cadence_round = ((data[8]&0xff) << 8) + (data[7]&0xff);
-                    new_cadence_time = ((data[10]&0xff) << 8) + (data[9]&0xff);
+                    new_speed_round = ((data[4] & 0xff) << 24) + ((data[3] & 0xff) << 16) + ((data[2] & 0xff) << 8) + (data[1] & 0xff);
+                    new_speed_time = ((data[6] & 0xff) << 8) + (data[5] & 0xff);
+                    new_cadence_round = ((data[8] & 0xff) << 8) + (data[7] & 0xff);
+                    new_cadence_time = ((data[10] & 0xff) << 8) + (data[9] & 0xff);
                 }
                 break;
             }
             case 0x01: {
                 if (data.length >= 7) {
-                    new_speed_round = ((data[4]&0xff) << 24) + ((data[3]&0xff) << 16) + ((data[2]&0xff) << 8) + (data[1]&0xff);
-                    new_speed_time = ((data[6]&0xff) << 8) + (data[5]&0xff);
+                    new_speed_round = ((data[4] & 0xff) << 24) + ((data[3] & 0xff) << 16) + ((data[2] & 0xff) << 8) + (data[1] & 0xff);
+                    new_speed_time = ((data[6] & 0xff) << 8) + (data[5] & 0xff);
                 }
                 break;
             }
             case 0x02: {
                 if (data.length >= 5) {
-                    new_cadence_round = ((data[2]&0xff) << 8) + (data[1]&0xff);
-                    new_cadence_time = ((data[4]&0xff) << 8) + (data[3]&0xff);
+                    new_cadence_round = ((data[2] & 0xff) << 8) + (data[1] & 0xff);
+                    new_cadence_time = ((data[4] & 0xff) << 8) + (data[3] & 0xff);
                 }
                 break;
             }
@@ -107,9 +110,13 @@ public class CadencePeripheral {
             }
         }
         if (new_cadence_round == cadence_round && new_cadence_time == cadence_time && new_speed_round == speed_round && new_speed_time == speed_time) {
-            Log.e("BLE","Same data");
-        }else {
+            Log.e("BLE", "Same data");
+            delta_cadence=0;
+            delta_speed=0;
+        } else {
             dataChanged = true;
+            delta_cadence = (int) ((new_cadence_round - cadence_round) / 1.f / (new_cadence_time - cadence_time));
+            delta_speed = (int) ((new_speed_round - speed_round) / 1.f / (new_speed_time - speed_time));
             cadence_time = new_cadence_time;
             cadence_round = new_cadence_round;
             speed_time = new_speed_time;
@@ -125,17 +132,17 @@ public class CadencePeripheral {
         String res;
         switch (mode) {
             case 0x03: {
-                res=String.format(App.sharedApp().getResources().getString(R.string.mode3),speed_round,speed_time/1024.f,cadence_round,cadence_time/1024.f)+"\n";
+                res = String.format(App.sharedApp().getResources().getString(R.string.mode3), speed_round, speed_time / 1024.f, cadence_round, cadence_time / 1024.f) + "\n";
 //                res =  "轮圈 " + speed_round + " 时间 " + speed_time/1024.f + " ; 曲柄" + cadence_round + " 时间 " + cadence_time/1024.f + "\n";
                 break;
             }
             case 0x01: {
-                res=String.format(App.sharedApp().getResources().getString(R.string.mode1),speed_round,speed_time/1024.f)+"\n";
+                res = String.format(App.sharedApp().getResources().getString(R.string.mode1), speed_round, speed_time / 1024.f) + "\n";
 //                res = "轮圈 " + speed_round + " 时间 " + speed_time/1024.f + "\n";
                 break;
             }
             case 0x02: {
-                res=String.format(App.sharedApp().getResources().getString(R.string.mode1),cadence_round,cadence_time/1024.f)+"\n";
+                res = String.format(App.sharedApp().getResources().getString(R.string.mode1), cadence_round, cadence_time / 1024.f) + "\n";
 //                res = "曲柄" + cadence_round + " 时间 " + cadence_time/1024.f + "\n";
                 break;
             }
@@ -159,7 +166,7 @@ public class CadencePeripheral {
             if (newState == STATE_CONNECTED) {
                 if (status == GATT_SUCCESS) {
                     //connection has been established
-                    CadencePeripheral.this.state=2;
+                    CadencePeripheral.this.state = 2;
                     Log.d("Bluetooth", "Connection has been established");
                     MSGEvent mevent = new MSGEvent(App.sharedApp().getString(R.string.connected));
                     EventBus.getDefault().post(mevent);
@@ -175,7 +182,7 @@ public class CadencePeripheral {
                 notifyCharacteristic = null;
                 notifyService = null;
                 gatt.close();
-                CadencePeripheral.this.state=0;
+                CadencePeripheral.this.state = 0;
                 CadencePeripheral.this.gatt = null;
                 BluetoothCenter.getInstance().setConnectedPeripheral(null);
 
