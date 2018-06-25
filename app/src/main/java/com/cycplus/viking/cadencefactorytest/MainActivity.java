@@ -223,10 +223,14 @@ public class MainActivity extends AppCompatActivity {
                 if (name == null) {
                     name = "Cycplus Cadence";
                 }
-                cell.name.setText(name);
                 if (device.state == 2) {
                     cell.rssi.setText(R.string.connect);
                     cell.rssi.setTextColor(Color.GREEN);
+                    if (device.isLegacy()){
+                        name=name+" 老版本";
+                    }else {
+                        name=name+" "+device.getHard_version()+"("+device.getSoft_version()+")";
+                    }
                 } else if (device.state == 1) {
                     cell.rssi.setText(R.string.connecting);
                     cell.rssi.setTextColor(Color.YELLOW);
@@ -234,6 +238,8 @@ public class MainActivity extends AppCompatActivity {
                     cell.rssi.setText(getString(R.string.signal_strength, device.getRssi()));
                     cell.rssi.setTextColor(Color.BLACK);
                 }
+                cell.name.setText(name);
+
                 cell.mark.setVisibility(View.VISIBLE);
             } else {
                 cell.name.setText(R.string.scanning);

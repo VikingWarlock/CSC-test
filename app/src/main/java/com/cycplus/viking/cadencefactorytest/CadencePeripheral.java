@@ -29,6 +29,13 @@ public class CadencePeripheral {
     private BluetoothGatt gatt;
     private BluetoothGattCharacteristic notifyCharacteristic;
     private BluetoothGattService notifyService;
+
+    private BluetoothGattCharacteristic softwareCharacteristic;
+    private BluetoothGattCharacteristic hardwareCharacteristic;
+    private BluetoothGattCharacteristic sleepCharacteristic;
+
+
+
     public BluetoothDevice bleDevice;
     public int state = 0;
     private int rssi;
@@ -39,6 +46,9 @@ public class CadencePeripheral {
     private int cadence_round = 0;
     private long cadence_time = 0;
     private boolean dataChanged = false;
+
+    private String soft_version;
+    private String hard_version;
 
     private float delta_cadence;
     private float delta_speed;
@@ -152,13 +162,13 @@ public class CadencePeripheral {
             case 0x01: {
                 res = String.format(App.sharedApp().getResources().getString(R.string.mode1), speed_round, speed_time / 1024.f);
 //                res = "轮圈 " + speed_round + " 时间 " + speed_time/1024.f + "\n";
-                res = res + "   --->  (" + a.format(delta_speed) + ")\n";
+                res = res + "   --->  (" + a.format(delta_speed) + ")速度\n";
                 break;
             }
             case 0x02: {
                 res = String.format(App.sharedApp().getResources().getString(R.string.mode2), cadence_round, cadence_time / 1024.f);
 //                res = "曲柄" + cadence_round + " 时间 " + cadence_time/1024.f + "\n";
-                res = res + "   --->  (" + a.format(delta_cadence) + ")\n";
+                res = res + "   --->  (" + a.format(delta_cadence) + ")踏频\n";
                 break;
             }
             default: {
@@ -174,9 +184,6 @@ public class CadencePeripheral {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
-            if (status == GATT_FAILURE) {
-                BluetoothCenter.getInstance().setConnectedPeripheral(null);
-            }
 
             if (newState == STATE_CONNECTED) {
                 if (status == GATT_SUCCESS) {
@@ -191,6 +198,8 @@ public class CadencePeripheral {
                     if (notifyCharacteristic == null) {
                         gatt.discoverServices();
                     }
+                }else {
+                    BluetoothCenter.getInstance().setConnectedPeripheral(null);
                 }
             } else if (newState == STATE_DISCONNECTED) {
                 //connection has been lost
@@ -233,6 +242,29 @@ public class CadencePeripheral {
                         }
                     }
                 }
+
+                BluetoothGattService deviceService=gatt.getService(UUID.fromString(BluetoothFilterAttributes.kDeviceInfoServer));
+                for (BluetoothGattCharacteristic ch:deviceService.getCharacteristics()){
+                    if (ch.getUuid().toString().equalsIgnoreCase(BluetoothFilterAttributes.kDeviceSoftInfoCharacteristic)){
+                        softwareCharacteristic=ch;
+                        continue;
+                    }
+                    if (ch.getUuid().toString().equalsIgnoreCase(BluetoothFilterAttributes.kDeviceHardInfoCharacteristic)){
+                        hardwareCharacteristic=ch;
+                        continue;
+                    }
+                }
+
+                BluetoothGattService sleepService=gatt.getService(UUID.fromString(BluetoothFilterAttributes.kDeviceSleepService));
+                if (sleepService!=null){
+                    for (BluetoothGattCharacteristic ch:sleepService.getCharacteristics()){
+                        if (ch.getUuid().toString().equalsIgnoreCase(BluetoothFilterAttributes.kDeviceSleepCharactierstic)){
+                            sleepCharacteristic=ch;
+                            break;
+                        }
+                    }
+                }
+
                 if (notifyCharacteristic != null) {
                     BluetoothEvent event = new BluetoothEvent();
                     CadencePeripheral.this.state = 2;
@@ -242,6 +274,14 @@ public class CadencePeripheral {
                     event.MacAddress = event.device.getAddress();
                     EventBus.getDefault().post(event);
                     Log.d("Bluetooth", "Characteristic found");
+                    if (hardwareCharacteristic!=null&&softwareCharacteristic!=null){
+                        App.sharedApp().getMainHandler().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                CadencePeripheral.this.gatt.readCharacteristic(hardwareCharacteristic);
+                            }
+                        });
+                    }
                 }
             }
         }
@@ -259,10 +299,19 @@ public class CadencePeripheral {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
-//            Log.e("BLE", "did update value");
+            Log.e("BLE", "did read value");
             if (characteristic == notifyCharacteristic) {
 //                Log.e("rx", Arrays.toString(characteristic.getValue()));
                 handleRX(notifyCharacteristic.getValue());
+            }else if (characteristic==hardwareCharacteristic){
+                hard_version=new String(hardwareCharacteristic.getValue());
+                version_updated();
+                if (gatt!=null&&softwareCharacteristic!=null){
+                    gatt.readCharacteristic(softwareCharacteristic);
+                }
+            }else if (characteristic==softwareCharacteristic){
+                soft_version=new String(softwareCharacteristic.getValue());
+                version_updated();
             }
         }
 
@@ -274,5 +323,42 @@ public class CadencePeripheral {
             }
         }
     };
+
+    void version_updated(){
+        String msg="";
+        if (hard_version!=null){
+            msg=msg+"HW:"+hard_version+"\n";
+        }
+        if (soft_version!=null){
+            msg=msg+"SW:"+soft_version+"\n";
+        }
+        MSGEvent event=new MSGEvent(msg);
+        EventBus.getDefault().post(event);
+        CenterEvent event1=CenterEvent.rssiEvent(this);
+        EventBus.getDefault().post(event1);
+    }
+
+    public String getSoft_version() {
+        if (soft_version!=null) return soft_version;
+        return "???";
+    }
+
+    public String getHard_version() {
+        if (hard_version!=null) return hard_version;
+        return "???";
+    }
+
+    public boolean isLegacy(){
+        if (state>=2){
+            if (hardwareCharacteristic==null||softwareCharacteristic==null){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void sleep(){
+
+    }
 
 }
