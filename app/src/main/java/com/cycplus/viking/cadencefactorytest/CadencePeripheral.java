@@ -54,6 +54,8 @@ public class CadencePeripheral {
     private float delta_speed;
     private int sameCount = 0;
 
+    private boolean wantSleep=false;
+
     public CadencePeripheral(BluetoothDevice device) {
         bleDevice = device;
         timestamp = System.currentTimeMillis();
@@ -297,6 +299,15 @@ public class CadencePeripheral {
         }
 
         @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            super.onCharacteristicWrite(gatt, characteristic, status);
+            if (characteristic==sleepCharacteristic){
+                wantSleep=false;
+                BluetoothCenter.getInstance().cancenConnection(CadencePeripheral.this);
+            }
+        }
+
+        @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
             Log.e("BLE", "did read value");
@@ -357,8 +368,23 @@ public class CadencePeripheral {
         return false;
     }
 
-    public void sleep(){
+    public boolean canSleep(){
+        return sleepCharacteristic!=null;
+    }
 
+    public void sleep(){
+        if (sleepCharacteristic!=null){
+//            sleepCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
+            gatt.setCharacteristicNotification(notifyCharacteristic,false);
+            App.sharedApp().getMainHandler().post(new Runnable() {
+                @Override
+                public void run() {
+                    sleepCharacteristic.setValue(new byte[]{0x7e,0x01});
+                    wantSleep=true;
+                    gatt.writeCharacteristic(sleepCharacteristic);
+                }
+            });
+        }
     }
 
 }

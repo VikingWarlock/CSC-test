@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -42,6 +43,9 @@ public class MainActivity extends AppCompatActivity {
 
     @BindView(R.id.console)
     TextView console;
+
+    @BindView(R.id.finish)
+    Button finish_button;
 
     List<CadencePeripheral> scanlist;
     private scanAdapter adapter;
@@ -147,6 +151,15 @@ public class MainActivity extends AppCompatActivity {
                 refreshList();
             } else {
                 console.setText("");
+                BluetoothCenter.getInstance().scanDevices();
+                refreshList();
+            }
+            if (BluetoothCenter.getInstance().getConnectedPeripheral()!=null){
+               if(BluetoothCenter.getInstance().getConnectedPeripheral().canSleep()){
+                    finish_button.setText(R.string.sleep);
+               }else {
+                   finish_button.setText(R.string.finish);
+               }
             }
         } else if (event instanceof CenterEvent) {
             CenterEvent e = (CenterEvent) event;
@@ -169,8 +182,11 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.finish)
     public void end_test() {
-        BluetoothCenter.getInstance().cancenConnection(BluetoothCenter.getInstance().getConnectedPeripheral());
-
+        if (!BluetoothCenter.getInstance().getConnectedPeripheral().canSleep()){
+            BluetoothCenter.getInstance().cancenConnection(BluetoothCenter.getInstance().getConnectedPeripheral());
+        }else {
+            BluetoothCenter.getInstance().getConnectedPeripheral().sleep();
+        }
     }
 
     @OnClick(R.id.reset)

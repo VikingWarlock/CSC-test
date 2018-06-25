@@ -13,4 +13,5 @@
     <string name="connected">connected, fetching characteristic...</string>
     <string name="disconnected">Connection lost</string>
     <string name="NO_DATA">No Data</string>
+    <string name="sleep">Sleep</string>
 </resources>

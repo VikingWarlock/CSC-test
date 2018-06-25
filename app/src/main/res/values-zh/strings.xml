@@ -14,5 +14,6 @@
     <string name="reset">重置</string>
     <string name="scanning">扫描中...</string>
     <string name="NO_DATA">无数据!!</string>
+    <string name="sleep">休眠</string>
 
 </resources>
